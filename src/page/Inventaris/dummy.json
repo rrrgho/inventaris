@@ -1,0 +1,44 @@
+{
+  "data" : [
+    {
+      "name" : "Dupa",
+      "code" : "AGH453",
+      "category" : "WORSHIP",
+      "type" : "Fragile",
+      "price": 120500,
+      "left":  5
+    },
+    {
+      "name" : "Lilin",
+      "code" : "ASAD3",
+      "category" : "WORSHIP",
+      "type" : "Fragile",
+      "price": 200000,
+      "left":  5
+    },
+    {
+      "name" : "Hio",
+      "code" : "AGH453",
+      "category" : "WORSHIP",
+      "type" : "Fragile",
+      "price": 120500,
+      "left":  5
+    },
+    {
+      "name" : "Meja",
+      "code" : "AGH453",
+      "category" : "WORSHIP",
+      "type" : "Fragile",
+      "price": 120500,
+      "left":  5
+    },
+    {
+      "name" : "Lamp",
+      "code" : "TKA81",
+      "category" : "WORSHIP",
+      "type" : "Fragile",
+      "price": 120500,
+      "left":  5
+    }
+  ]
+}

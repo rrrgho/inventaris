@@ -1,0 +1,55 @@
+.theme-bg-blue{
+    background: #007AFF;
+}
+.theme-bg-red{
+    background: #FF3B30;
+}
+.theme-bg-green{
+    background: #34C759;
+}
+
+
+/* Sidebar */
+.theme-sidebar{
+    height: 100vh;
+}
+.theme-top-sidebar{
+    height: 60vh;
+    margin-top: 10vh;
+}
+.theme-sidebar-menu{
+    width: 80%;
+    padding: 20px;
+    font-weight: bold;
+    color: #fff;
+    border-end-end-radius: 50px;
+    border-start-end-radius: 50px;
+    cursor: pointer;
+}
+
+.theme-sidebar-menu-active{
+    width: 80%;
+    padding: 20px;
+    font-weight: bold;
+    color: #007AFF;
+    border-end-end-radius: 50px;
+    border-start-end-radius: 50px;
+    cursor: pointer;
+    background: #fff;
+}
+
+.theme-sidebar-menu:hover{
+    width: 80%;
+    padding: 20px;
+    font-weight: bold;
+    background: #fff;
+    color: #007AFF ;
+}
+
+
+
+/* Theme container */
+.theme-title{
+    font-size: 40px;
+    font-weight: bold;
+}
