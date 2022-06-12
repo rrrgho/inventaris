@@ -98,47 +98,50 @@ const Transaksi: FC = () => {
         const collection_id_generated = new Date().toISOString() + '#' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5)
 
         if(chart.length > 0){
-            chart.map((item:object | any) => {
-                new Promise(resolve => {
-                    resolve(
-                        setDoc(doc(db, `transaksi/${collection_id_generated}/item`, `doc#${item.id}`), {
-                            item
-                        }).then(() => {
-                            new Promise(resolve => {
-                                resolve(
-                                    setDoc(doc(db, `transaksi/${collection_id_generated}/total_harga`, `doc#${collection_id_generated}`), {
-                                        total_harga_transaksi: status === 'lunasManual' ? Number(totalManual) : Number(total)
-                                    })
-                                    .then(() => {
-                                        if(status === 'lunas' || status === 'lunasManual') {
-                                            new Promise(resolve => {
-                                                resolve(
-                                                    addDoc(riwayatPembelianCollectionRef, {
-                                                        kode_transaksi: collection_id_generated,
-                                                        nama_pembeli: ''
-                                                    }).then(() => { window.location.reload() })
-                                                )
-                                            })
-                                        }
-
-                                        if(status === 'belumLunas'){
-                                            new Promise(resolve => {
-                                                resolve(
-                                                    addDoc(daftarPiutangCollectionRef, {
-                                                        kode_transaksi: collection_id_generated,
-                                                        nama_pembeli: belumLunas.nama_pembeli,
-                                                        keterangan: belumLunas.keterangan
-                                                    }).then(() => { window.location.reload() })
-                                                )
-                                            })
-                                        }
-                                    })
-                                )
+            setDoc(doc(db, `transaksi`, `${collection_id_generated}`), {
+                doc_id: collection_id_generated
+            }).then(() => {
+                chart.map((item:object | any) => {
+                    new Promise(resolve => {
+                        resolve(
+                            setDoc(doc(db, `transaksi/${collection_id_generated}/item`, `doc#${item.id}`), {
+                                item
+                            }).then(() => {
+                                setDoc(doc(db, `transaksi/${collection_id_generated}/total_harga`, `doc#${collection_id_generated}`), {
+                                    total_harga_transaksi: status === 'lunasManual' ? Number(totalManual) : Number(total)
+                                })
                             })
-                        })
-                    )
+                        )
+                    })
                 })
+
+                if(status === 'lunas' || status === 'lunasManual') {
+                    new Promise(resolve => {
+                        resolve(
+                            addDoc(riwayatPembelianCollectionRef, {
+                                kode_transaksi: collection_id_generated,
+                                nama_pembeli: '',
+                                total_harga_transaksi: status === 'lunasManual' ? Number(totalManual) : Number(total)
+                            }).then(() => { window.location.reload() })
+                        )
+                    })
+                }
+
+                if(status === 'belumLunas'){
+                    new Promise(resolve => {
+                        resolve(
+                            addDoc(daftarPiutangCollectionRef, {
+                                kode_transaksi: collection_id_generated,
+                                nama_pembeli: belumLunas.nama_pembeli,
+                                keterangan: belumLunas.keterangan,
+                                total_harga_transaksi: Number(total)
+                            }).then(() => { window.location.reload() })
+                        )
+                    })
+                }
             })
+
+
 
 
         }
@@ -333,7 +336,7 @@ const Transaksi: FC = () => {
                                             <div className="card card-body">
                                                 <h2>Input Manual ?</h2>
                                                 <h5>Input nominal pembayaran secara manual</h5>
-                                                
+
                                                 <div className="form-group">
                                                     <input type="number" className="form-control" defaultValue={Number(total)}
                                                         onChange={(e:SetStateAction<any>) => { setTotalManual(e.target.value) }}

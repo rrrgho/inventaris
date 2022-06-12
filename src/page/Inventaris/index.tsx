@@ -9,6 +9,7 @@ let dummy = require('./dummy.json')
 const Inventaris: FC = () => {
     const inventarisCollectionRef = collection(db, 'Inventaris')
     const [inventaris, setInventaris] = useState<Array<object>>([])
+    const [toast, setToast] = useState<string>("")
     const [inventarisInput, setInventarisInput] = useState<object | any>({
         'nama_barang': '',
         'jumlah_barang': '',
@@ -18,6 +19,26 @@ const Inventaris: FC = () => {
         'kode_barang': '',
         'id' : ''
     })
+
+    const successAdd = () => {
+        setToast("success")
+        setTimeout(() => {
+            setToast("")
+        }, 3000)
+    }
+
+    const successUpdate = () => {
+        setToast("update")
+        setTimeout(() => {
+            setToast("")
+        }, 3000)
+    }
+    const successDelete = () => {
+        setToast("delete")
+        setTimeout(() => {
+            setToast("")
+        }, 3000)
+    }
 
     const clearInput = () => {
         setInventarisInput((prev:object) => ({
@@ -53,6 +74,7 @@ const Inventaris: FC = () => {
                     .then((res) => {
                         clearInput()
                         getInventaris()
+                        successAdd()
                     })
                     .catch(err => console.log(err))
             )
@@ -82,6 +104,7 @@ const Inventaris: FC = () => {
                     .then(() => {
                         clearInput()
                         getInventaris()
+                        successUpdate()
                     })
                     .catch(err => {
                         console.log(err)
@@ -100,6 +123,7 @@ const Inventaris: FC = () => {
                     .then(() => {
                         clearInput()
                         getInventaris()
+                        successDelete()
                     })
             )
         })
@@ -112,7 +136,7 @@ const Inventaris: FC = () => {
     }, [])
 
     return (
-        <THEME title={"Inventaris"} subtitle={"Lihat, edit dan kelola barang pada toko"}>
+        <THEME toast={toast} title={"Inventaris"} subtitle={"Lihat, edit dan kelola barang pada toko"}>
             <>
                 <div className="row mt-5">
                     <div className="col-12">
