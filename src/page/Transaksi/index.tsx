@@ -158,9 +158,7 @@ const Transaksi: FC = () => {
                     <div className="col-12">
                         <div className="row justify-content-between">
                             <div className="col-4">
-                                <span onClick={() => {
-                                    console.log(chart)
-                                }}>Menampilkan {dummy.data.length} barang</span>
+                                <span>Menampilkan {inventaris.length} barang</span>
                             </div>
                             <div className="col-4">
                                 <input className="form-control form-control-lg" type="text" placeholder="Cari barang"

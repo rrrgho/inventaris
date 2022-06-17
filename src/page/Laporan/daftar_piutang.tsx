@@ -60,16 +60,6 @@ const DaftarPiutang: FC = () => {
     },[])
     return (
         <div className="row">
-            <div className="col-6 d-flex mt-5">
-                <span className="mt-1" ><b>Lihat Berdasarkan</b></span>
-                <button className="btn bg-white text-dark ms-5">Hari</button>
-                <button className="btn btn-primary">Bulan</button>
-            </div>
-            <div className="col-6 d-flex mt-5">
-                <span className="mt-1"><b>Periode</b></span>
-                <button className="btn bg-white text-dark ms-5">Hari</button>
-                <button className="btn btn-primary">Bulan</button>
-            </div>
 
             <div className="col-12 mt-4">
                 <table className="table table-bordered">

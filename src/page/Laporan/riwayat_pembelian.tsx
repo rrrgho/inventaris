@@ -11,6 +11,14 @@ const RiwayatPembelian: FC = () => {
     const [itemTransaksi, setItemTransaksi] = useState<any>()
     const [transaksi, setTransaksi] = useState<any>()
 
+    // Date Filter Storing State
+    interface dateProps {
+        date_from: string,
+        date_to: string
+    }
+    const [dateFilter, setDateFilter] = useState<dateProps>({'date_from': '', 'date_to': ''})
+    const [isFilter,setIsFilter] = useState<boolean>(false)
+
     const getRiwayatPembelian = async () => {
         await getDocs(RiwayatPembelianRef)
             .then(res => {
@@ -28,21 +36,88 @@ const RiwayatPembelian: FC = () => {
 
     }
 
+    const filterByDate = async () => {
+        let tmp_filter_data:any = []
+        await getDocs(RiwayatPembelianRef)
+            .then(res => {
+                setIsFilter(true)
+                res.docs.map(doc => {
+                    let convert_trans_id = moment(doc.data().kode_transaksi.split("#")[0]) // For Date Filter needs
+                    let from = moment(dateFilter.date_from)
+                    let to = moment(dateFilter.date_to)
+                    if (convert_trans_id >= from && convert_trans_id <= to) {
+                        tmp_filter_data = [...tmp_filter_data, doc.data()]
+                    }
+                })
+            })
+        setDataRiwayat(tmp_filter_data)
+    }
+
+    const clearFilterByDate = async () => {
+        setIsFilter(true)
+        let date_from_element:any = document.getElementById('date_from')
+        let date_to_element:any = document.getElementById('date_to')
+        date_from_element.value = null; date_to_element = null
+        await setDateFilter((prev:dateProps) => ({
+            ...prev,
+            date_to: '',
+            date_from: ''
+        }))
+
+        getRiwayatPembelian()
+    }
+
     useEffect(() => {
         getRiwayatPembelian()
     },[])
     return (
         <div className="row">
-            <div className="col-6 d-flex mt-5">
-                <span className="mt-1" ><b>Lihat Berdasarkan</b></span>
-                <button className="btn bg-white text-dark ms-5">Hari</button>
-                <button className="btn btn-primary">Bulan</button>
+            <div className="col-5 d-flex mt-5">
+                <span className="mt-1"><b>Lihat Berdasarkan</b></span>
+                <button className="btn bg-white text-dark ms-5">Semua</button>
+                <button className="btn btn-primary">Berdasarkan Tanggal</button>
             </div>
-            <div className="col-6 d-flex mt-5">
-                <span className="mt-1"><b>Periode</b></span>
-                <button className="btn bg-white text-dark ms-5">Hari</button>
-                <button className="btn btn-primary">Bulan</button>
+            <div className="col-7 d-flex mt-5">
+                <div className="form-group ms-3">
+                    <label htmlFor="">Dari Tanggal : </label>
+                    <input id="date_from" className="ms-3 form-input" type="datetime-local"
+                           onChange={(e) => {
+                               setDateFilter((prev: dateProps) => ({
+                                   ...prev,
+                                   date_from: e.target.value
+                               }))
+                           }}
+                    />
+                </div>
+                <div className="form-group ms-3">
+                    <label htmlFor="">Ke Tanggal : </label>
+                    <input id="date_to" defaultValue={dateFilter.date_to} className="ms-3 form-input" type="datetime-local"
+                           onChange={(e) => {
+                               setDateFilter((prev: dateProps) => ({
+                                   ...prev,
+                                   date_to: e.target.value
+                               }))
+                           }}
+                    />
+                </div>
+                <div className="form-group">
+                    <button className="btn btn-warning ms-1" style={{marginTop: -5}} onClick={() => {
+                        filterByDate()
+                    }}>Apply Filter
+                    </button>
+                </div>
             </div>
+            {
+                isFilter &&
+                <div className="col-12">
+                    <div className="alert alert-info mt-3 alert-dismissible fade show" role="alert">
+                        Menampilkan hasil dari
+                        tanggal <b> {moment(dateFilter.date_from).format('MMMM Do YYYY')} </b> to <b>{moment(dateFilter.date_to).format('MMMM Do YYYY')} </b>
+                        <button onClick={() => {clearFilterByDate()}} type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+
+            }
 
             <div className="col-12 mt-4">
                 <table className="table table-bordered">
