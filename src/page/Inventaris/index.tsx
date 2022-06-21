@@ -1,7 +1,7 @@
 import React, {FC, useEffect, useState} from "react";
 import THEME from "../../theme";
 
-import {collection, getDocs, addDoc, doc, updateDoc, deleteDoc} from 'firebase/firestore'
+import {collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where} from 'firebase/firestore'
 import {db} from "../../firebase";
 
 let dummy = require('./dummy.json')
@@ -19,6 +19,31 @@ const Inventaris: FC = () => {
         'kode_barang': '',
         'id' : ''
     })
+
+    // Filter
+    const [filter, setFilter] = useState("")
+    const [isFilter, setIsFilter] = useState(false)
+
+
+    const searchInventaris = async () => {
+        setIsFilter(true)
+        const query_inventaris = query(inventarisCollectionRef, where("kode_barang", "==", filter))
+        const querySnapshot = await getDocs(query_inventaris)
+        let search_result: any = []
+        querySnapshot.forEach((doc) => {
+            search_result = [...search_result, [doc.data(), doc.id]]
+        });
+        setInventaris(search_result)
+    }
+
+    const removeSearch = () => {
+        let filter_input = document.getElementById('filter_input')
+        setFilter("")
+        setIsFilter(false)
+        getInventaris()
+        // @ts-ignore
+        filter_input.value = ""
+    }
 
     const successAdd = () => {
         setToast("success")
@@ -142,15 +167,37 @@ const Inventaris: FC = () => {
                     <div className="col-12">
                         <div className="row justify-content-between">
                             <div className="col-4">
-                                <span onClick={() => {
-                                    console.log(inventaris)
-                                }}>Menampilkan {dummy.data.length} barang</span>
+                                <span>Menampilkan {inventaris.length} barang</span> <br/>
                             </div>
-                            <div className="col-4">
-                                <input className="form-control form-control-lg" type="text" placeholder="Cari barang"
-                                       aria-label=".form-control-lg example"/>
+                            <div className="col-4 d-flex">
+                                <input id="filter_input" className="form-control form-control-lg" type="text"
+                                       placeholder="Cari berdasarkan kode barang"
+                                       aria-label=".form-control-lg example"
+                                       onChange={(e) => {
+                                           setFilter(e.target.value)
+                                       }}
+                                       defaultValue={filter}
+                                />
+                                <button onClick={() => {
+                                    searchInventaris()
+                                }} className="btn btn-primary text-white ms-2"><i className="fa fa-search"></i></button>
                             </div>
                         </div>
+                        {
+                            isFilter &&
+                            <div className="row mt-3">
+                                <div className="alert alert-warning alert-dismissible fade show" role="alert">
+                                    Menampilkan hasil pencarian untuk kode barang
+                                    <strong className="ms-2">{filter}</strong>
+                                    <button
+                                        onClick={() => {
+                                            removeSearch()
+                                        }}
+                                        type="button" className="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                </div>
+                            </div>
+                        }
 
                         {/* Table menampilkan Data */}
                         <div className="row mt-3">

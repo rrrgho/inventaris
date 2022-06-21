@@ -1,6 +1,6 @@
 import React, {FC, SetStateAction, useEffect, useState} from "react";
 import THEME from "../../theme";
-import {collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, setDoc} from 'firebase/firestore'
+import {collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, setDoc, where} from 'firebase/firestore'
 import {db} from "../../firebase";
 
 let dummy = require('../Inventaris/dummy.json')
@@ -19,11 +19,16 @@ const Transaksi: FC = () => {
     const [totalManual, setTotalManual] = useState<number>(0)
     const [isInputManual, setIsInputManual] = useState<boolean>(false)
 
+    // Filter
+    const [filter, setFilter] = useState("")
+    const [isFilter, setIsFilter] = useState(false)
+
     // State untuk Belum Lunas
     interface BelumLunasProps {
         nama_pembeli: string,
         keterangan: string
     }
+
     const [belumLunas, setBelumLunas] = useState<BelumLunasProps>({
         'nama_pembeli': '',
         'keterangan': '',
@@ -39,6 +44,26 @@ const Transaksi: FC = () => {
                 })
             )
         })
+    }
+
+    const searchInventaris = async () => {
+        setIsFilter(true)
+        const query_inventaris = query(inventarisCollectionRef, where("kode_barang", "==", filter))
+        const querySnapshot = await getDocs(query_inventaris)
+        let search_result: any = []
+        querySnapshot.forEach((doc) => {
+            search_result = [...search_result, [doc.data(), doc.id]]
+        });
+        setInventaris(search_result)
+    }
+
+    const removeSearch = () => {
+        let filter_input = document.getElementById('filter_input')
+        setFilter("")
+        setIsFilter(false)
+        getInventaris()
+        // @ts-ignore
+        filter_input.value = ""
     }
 
     const addToChart = (obj: object | any) => {
@@ -94,14 +119,14 @@ const Transaksi: FC = () => {
         })])
     }
 
-    const addTransaction = (status:string) => {
+    const addTransaction = (status: string) => {
         const collection_id_generated = new Date().toISOString() + '#' + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5)
 
-        if(chart.length > 0){
+        if (chart.length > 0) {
             setDoc(doc(db, `transaksi`, `${collection_id_generated}`), {
                 doc_id: collection_id_generated
             }).then(() => {
-                chart.map((item:object | any) => {
+                chart.map((item: object | any) => {
                     new Promise(resolve => {
                         resolve(
                             setDoc(doc(db, `transaksi/${collection_id_generated}/item`, `doc#${item.id}`), {
@@ -115,19 +140,21 @@ const Transaksi: FC = () => {
                     })
                 })
 
-                if(status === 'lunas' || status === 'lunasManual') {
+                if (status === 'lunas' || status === 'lunasManual') {
                     new Promise(resolve => {
                         resolve(
                             addDoc(riwayatPembelianCollectionRef, {
                                 kode_transaksi: collection_id_generated,
                                 nama_pembeli: '',
                                 total_harga_transaksi: status === 'lunasManual' ? Number(totalManual) : Number(total)
-                            }).then(() => { window.location.reload() })
+                            }).then(() => {
+                                window.location.reload()
+                            })
                         )
                     })
                 }
 
-                if(status === 'belumLunas'){
+                if (status === 'belumLunas') {
                     new Promise(resolve => {
                         resolve(
                             addDoc(daftarPiutangCollectionRef, {
@@ -135,13 +162,13 @@ const Transaksi: FC = () => {
                                 nama_pembeli: belumLunas.nama_pembeli,
                                 keterangan: belumLunas.keterangan,
                                 total_harga_transaksi: Number(total)
-                            }).then(() => { window.location.reload() })
+                            }).then(() => {
+                                window.location.reload()
+                            })
                         )
                     })
                 }
             })
-
-
 
 
         }
@@ -158,13 +185,37 @@ const Transaksi: FC = () => {
                     <div className="col-12">
                         <div className="row justify-content-between">
                             <div className="col-4">
-                                <span>Menampilkan {inventaris.length} barang</span>
+                                <span>Menampilkan {inventaris.length} barang</span> <br/>
                             </div>
-                            <div className="col-4">
-                                <input className="form-control form-control-lg" type="text" placeholder="Cari barang"
-                                       aria-label=".form-control-lg example"/>
+                            <div className="col-4 d-flex">
+                                <input id="filter_input" className="form-control form-control-lg" type="text"
+                                       placeholder="Cari berdasarkan kode barang"
+                                       aria-label=".form-control-lg example"
+                                       onChange={(e) => {
+                                           setFilter(e.target.value)
+                                       }}
+                                       defaultValue={filter}
+                                />
+                                <button onClick={() => {
+                                    searchInventaris()
+                                }} className="btn btn-primary text-white ms-2"><i className="fa fa-search"></i></button>
                             </div>
                         </div>
+                        {
+                            isFilter &&
+                            <div className="row mt-3">
+                                <div className="alert alert-warning alert-dismissible fade show" role="alert">
+                                    Menampilkan hasil pencarian untuk kode barang
+                                    <strong className="ms-2">{filter}</strong>
+                                    <button
+                                        onClick={() => {
+                                            removeSearch()
+                                        }}
+                                        type="button" className="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                </div>
+                            </div>
+                        }
 
                         {/* Table menampilkan Data */}
                         <div className="row mt-3">
@@ -274,18 +325,20 @@ const Transaksi: FC = () => {
                             <div className="modal-body" id="myGroup">
                                 <div className="row">
                                     <div className="col-7">
-                                        <h3>Total Harga : Rp. { total }</h3>
+                                        <h3>Total Harga : Rp. {total}</h3>
                                     </div>
                                     <div className="col-5">
                                         <div className="row">
                                             <div className="col-6 d-grid">
-                                                <button type="button" className="btn btn-success" data-parent="#myGroup" data-bs-toggle="collapse"
+                                                <button type="button" className="btn btn-success" data-parent="#myGroup"
+                                                        data-bs-toggle="collapse"
                                                         data-bs-target="#konfirmasiLunas">
                                                     Lunas
                                                 </button>
                                             </div>
                                             <div className="col-6 d-grid">
-                                                <button type="button" className="btn btn-success" data-parent="#myGroup" data-bs-toggle="collapse"
+                                                <button type="button" className="btn btn-success" data-parent="#myGroup"
+                                                        data-bs-toggle="collapse"
                                                         data-bs-target="#inputManual">
                                                     Input Manual
                                                 </button>
@@ -293,7 +346,8 @@ const Transaksi: FC = () => {
                                         </div>
                                         <div className="row mt-1">
                                             <div className="col-6 d-grid">
-                                                <button type="button" className="btn btn-danger" data-parent="#myGroup" data-bs-toggle="collapse"
+                                                <button type="button" className="btn btn-danger" data-parent="#myGroup"
+                                                        data-bs-toggle="collapse"
                                                         data-bs-target="#belumLunas">
                                                     Belum Lunas
                                                 </button>
@@ -324,7 +378,8 @@ const Transaksi: FC = () => {
                                                     </button>
                                                     <button type="button" className="btn btn-light" onClick={() => {
                                                         addTransaction("lunas")
-                                                    }}>Lunas</button>
+                                                    }}>Lunas
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -335,20 +390,32 @@ const Transaksi: FC = () => {
                                                 <h2>Input Manual ?</h2>
                                                 <h5>Input nominal pembayaran secara manual</h5>
 
-                                                <div className="form-group">
-                                                    <input type="number" className="form-control" defaultValue={Number(total)}
-                                                        onChange={(e:SetStateAction<any>) => { setTotalManual(e.target.value) }}
-                                                    />
-                                                </div>
+                                                <form onSubmit={(event) => {
+                                                    event.preventDefault()
+                                                    setIsInputManual(true)
+                                                    addTransaction('lunasManual')
+                                                }}>
+                                                    <div className="form-group">
+                                                        <input required={true} type="number" className="form-control"
+                                                               defaultValue={Number(total)}
+                                                               onChange={(e: SetStateAction<any>) => {
+                                                                   setTotalManual(e.target.value)
+                                                               }}
+                                                        />
+                                                    </div>
 
-                                                <div className="col text-end mt-3">
-                                                    <button type="button" className="btn btn-primary me-2"
-                                                            data-bs-toggle="collapse"
-                                                            data-bs-target="#inputManual" onClick={() => {setIsInputManual(false)}}>Batal
+                                                    <div className="col text-end mt-3">
+                                                        <button type="button" className="btn btn-primary me-2"
+                                                                data-bs-toggle="collapse"
+                                                                data-bs-target="#inputManual" onClick={() => {
+                                                            setIsInputManual(false)
+                                                        }}>Batal
 
-                                                    </button>
-                                                    <button type="button" className="btn btn-primary" onClick={() => {setIsInputManual(true); addTransaction('lunasManual')}}>Simpan</button>
-                                                </div>
+                                                        </button>
+                                                        <button type="submit" className="btn btn-primary">Simpan
+                                                        </button>
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
 
@@ -359,38 +426,44 @@ const Transaksi: FC = () => {
                                                 <h2>Input Manual ?</h2>
                                                 <h5>Input nominal pembayaran secara manual</h5>
 
-                                                <div className="form-group">
-                                                    <input type="text" className="form-control"
-                                                           onChange={(e:SetStateAction<any>) => {
-                                                               setBelumLunas((prev:BelumLunasProps) => ({
-                                                                   ...prev,
-                                                                   nama_pembeli: e.target.value
-                                                               }))
-                                                           }}
-                                                           placeholder="Nama Pembeli"
-                                                    />
-                                                </div>
+                                                <form onSubmit={(event) => {
+                                                    event.preventDefault()
+                                                    addTransaction('belumLunas')
+                                                }}>
+                                                    <div className="form-group">
+                                                        <input required={true} type="text" className="form-control"
+                                                               onChange={(e: SetStateAction<any>) => {
+                                                                   setBelumLunas((prev: BelumLunasProps) => ({
+                                                                       ...prev,
+                                                                       nama_pembeli: e.target.value
+                                                                   }))
+                                                               }}
+                                                               placeholder="Nama Pembeli"
+                                                        />
+                                                    </div>
 
-                                                <div className="form-group mt-3">
-                                                    <textarea className="form-control"
-                                                           onChange={(e:SetStateAction<any>) => {
-                                                               setBelumLunas((prev:BelumLunasProps) => ({
-                                                                   ...prev,
-                                                                   keterangan: e.target.value
-                                                               }))
-                                                           }}
+                                                    <div className="form-group mt-3">
+                                                    <textarea required={true} className="form-control"
+                                                              onChange={(e: SetStateAction<any>) => {
+                                                                  setBelumLunas((prev: BelumLunasProps) => ({
+                                                                      ...prev,
+                                                                      keterangan: e.target.value
+                                                                  }))
+                                                              }}
                                                               placeholder="Keterangan"
                                                     />
-                                                </div>
+                                                    </div>
 
-                                                <div className="col text-end mt-3">
-                                                    <button type="button" className="btn btn-primary me-2"
-                                                            data-bs-toggle="collapse"
-                                                            data-bs-target="#belumLunas">Batal
+                                                    <div className="col text-end mt-3">
+                                                        <button type="button" className="btn btn-primary me-2"
+                                                                data-bs-toggle="collapse"
+                                                                data-bs-target="#belumLunas">Batal
 
-                                                    </button>
-                                                    <button type="button" className="btn btn-primary" onClick={() => {addTransaction('belumLunas')}}>Simpan</button>
-                                                </div>
+                                                        </button>
+                                                        <button type="submit" className="btn btn-primary">Simpan
+                                                        </button>
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
