@@ -10,6 +10,9 @@ import Transaksi from "../page/Transaksi";
 import Laporan from "../page/Laporan";
 import ProtectedRoutes from "./protected_routes";
 import Admin from "../page/Admin";
+import Customer from "../page/Customer";
+import Supplier from "../page/Supplier";
+import SupplierDetail from "../page/SupplierDetail";
 
 
 const RouterPath = () => {
@@ -20,6 +23,24 @@ const RouterPath = () => {
                 <Route path="/" element={
                     <ProtectedRoutes>
                         <Inventaris/>
+                    </ProtectedRoutes>
+                }/>
+
+                <Route path="customer" element={
+                    <ProtectedRoutes>
+                        <Customer/>
+                    </ProtectedRoutes>
+                }/>
+
+                <Route path="supplier" element={
+                    <ProtectedRoutes>
+                        <Supplier/>
+                    </ProtectedRoutes>
+                }/>
+
+                <Route path="supplier/:slug" element={
+                    <ProtectedRoutes>
+                        <SupplierDetail/>
                     </ProtectedRoutes>
                 }/>
 

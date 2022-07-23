@@ -29,6 +29,20 @@ const THEME: FC<Props> = ({children, title, subtitle, toast}) => {
                                 <span className="ms-3">Inventaris</span>
                             </div>
                         </Link>
+                        <Link to="/customer">
+                            <div
+                                className={`theme-sidebar-menu ${Route.pathname === '/customer' ? 'theme-sidebar-menu-active' : ''} mt-2`}>
+                                <i className="fa fa-calculator"></i>
+                                <span className="ms-3">Customer</span>
+                            </div>
+                        </Link>
+                        <Link to="/supplier">
+                            <div
+                                className={`theme-sidebar-menu ${Route.pathname === '/supplier' ? 'theme-sidebar-menu-active' : ''} mt-2`}>
+                                <i className="fa fa-calculator"></i>
+                                <span className="ms-3">Supplier</span>
+                            </div>
+                        </Link>
                         <Link to="/transaksi">
                             <div
                                 className={`theme-sidebar-menu ${Route.pathname === '/transaksi' ? 'theme-sidebar-menu-active' : ''} mt-2`}>
@@ -102,6 +116,15 @@ const THEME: FC<Props> = ({children, title, subtitle, toast}) => {
                 <div className="toast-hapus">
                     <i className="fa fa-check"></i>
                     <span className="ms-2">Berhasil dihapus</span>
+                </div>
+
+            }
+            {
+                toast !== "" &&
+                toast === "belumpilih" &&
+                <div className="toast-hapus">
+                    <i className="fa fa-check"></i>
+                    <span className="ms-2">Anda belum memilih data apapun</span>
                 </div>
 
             }
